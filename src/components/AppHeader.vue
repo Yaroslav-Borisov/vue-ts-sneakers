@@ -1,20 +1,30 @@
 <script setup lang="ts">
+import { PageState } from '../enums/PageState.ts';
+
 interface Props {
-  favFilterState: boolean;
+  pageState: PageState;
   totalCartPrice: number;
 }
 
+const resetPageState = (): PageState => {
+  return PageState.All;
+};
+
+const toggleFavoritesFilter = (): PageState => {
+  return props.pageState === PageState.Favorite ? PageState.All : PageState.Favorite;
+};
+
 const emit = defineEmits<{
   (e: 'openCartModal'): void;
-  (e: 'changeFavFilterState'): void;
+  (e: 'changePageState', newPageState: PageState): void;
 }>();
 
-defineProps<Props>();
+const props = defineProps<Props>();
 </script>
 
 <template>
   <header class="page-header">
-    <a class="page-header__logo logo" href="#">
+    <a class="page-header__logo logo" href="#" @click="emit('changePageState', resetPageState())">
       <img class="logo__image" src="/logo.png" width="40" height="40" />
       <span class="logo__title">Vue Sneakers</span>
       <span class="logo__desc">Магазин брендовых кроссовок</span>
@@ -24,10 +34,10 @@ defineProps<Props>();
         <img class="main-nav__icon" src="/cart.svg" width="20" height="19" />
         <span class="main-nav__text">{{ totalCartPrice }} руб.</span>
       </a>
-      <a class="main-nav__link" href="#" @click="emit('changeFavFilterState')">
+      <a class="main-nav__link" href="#" @click="emit('changePageState', toggleFavoritesFilter())">
         <img
           class="main-nav__icon"
-          :src="favFilterState ? '/fav-active.svg' : '/fav.svg'"
+          :src="pageState === PageState.Favorite ? '/fav-active.svg' : '/fav.svg'"
           width="20"
           height="19"
         />

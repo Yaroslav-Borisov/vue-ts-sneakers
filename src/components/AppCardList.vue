@@ -6,17 +6,17 @@ interface Props {
   cards: Card[];
 }
 
-const toggleFavCard = (id: number) => {
-  emit('toggleFavCard', id);
+const toggleFavoritesCard = (id: number | string) => {
+  emit('toggleFavoritesCard', id);
 };
 
-const toggleCartCard = (id: number) => {
+const toggleCartCard = (id: number | string) => {
   emit('toggleCartCard', id);
 };
 
 const emit = defineEmits<{
-  (e: 'toggleFavCard', id: number): void;
-  (e: 'toggleCartCard', id: number): void;
+  (e: 'toggleFavoritesCard', id: number | string): void;
+  (e: 'toggleCartCard', id: number | string): void;
 }>();
 
 defineProps<Props>();
@@ -25,10 +25,12 @@ defineProps<Props>();
 <template>
   <div class="page-content__list card-list">
     <AppCard
+      v-if="cards.length > 0"
       v-for="card in cards"
       :card="card"
-      @toggleFavCard="toggleFavCard"
+      @toggleFavoritesCard="toggleFavoritesCard"
       @toggleCartCard="toggleCartCard"
     />
+    <h2 v-else>Пусто</h2>
   </div>
 </template>

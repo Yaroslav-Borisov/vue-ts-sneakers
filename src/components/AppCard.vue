@@ -5,8 +5,8 @@ interface Props {
   card: Card;
 }
 const emit = defineEmits<{
-  (e: 'toggleFavCard', id: number): void;
-  (e: 'toggleCartCard', id: number): void;
+  (e: 'toggleFavoritesCard', id: number | string): void;
+  (e: 'toggleCartCard', id: number | string): void;
 }>();
 
 defineProps<Props>();
@@ -14,7 +14,7 @@ defineProps<Props>();
 
 <template>
   <div class="card-list__item card">
-    <button class="card__button card__button--fav" @click="emit('toggleFavCard', card.id)">
+    <button class="card__button card__button--fav" @click="emit('toggleFavoritesCard', card.id)">
       <img
         class="card__button-icon"
         :src="card.isFavorite ? '/btn-fav-active.svg' : '/btn-fav.svg'"

@@ -3,14 +3,15 @@ import AppHeader from './components/AppHeader.vue';
 import AppSearch from './components/AppSearch.vue';
 import AppCardList from './components/AppCardList.vue';
 import AppCartModal from './components/AppCartModal.vue';
-import { computed, ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { Card } from './types/Card';
+import { useModal } from './composables/useModal';
+import { useCart } from './composables/useCart';
+import { useFavorites } from './composables/useFavorites';
+import { PageState } from './enums/PageState.ts';
+import { useSearch } from './composables/useSearch';
 
-const isCartVisible = ref<boolean>(false);
-const isFavFilterOn = ref<boolean>(false);
-const isOrderDone = ref<boolean>(false);
-const searchText = ref<string>('');
-
+const pageState = ref<PageState>(PageState.All);
 const cards = ref<Card[]>([
   {
     id: 1,
@@ -93,76 +94,88 @@ const cards = ref<Card[]>([
     isCart: false,
   },
 ]);
-const searchedCards = computed(() =>
-  searchText.value.length > 0
-    ? cards.value.filter((card) => card.title.toLowerCase().includes(searchText.value))
-    : cards.value
-);
-const favCards = computed(() => searchedCards.value.filter((card) => card.isFavorite === true));
-const cartCards = computed(() => cards.value.filter((card) => card.isCart === true));
-const totalCartPrice = computed<number>(() =>
-  cartCards.value.map((card) => card.price).reduce((total, current) => total + current, 0)
-);
-const totalCartPriceTax = computed<number>(() => Math.ceil(totalCartPrice.value * 0.05));
 
-const changeFavFilterState = () => {
-  isFavFilterOn.value = !isFavFilterOn.value;
+const { isModalVisible, openModal, closeModal } = useModal();
+const {
+  cart,
+  cartState,
+  totalCartPrice,
+  removeFromCart,
+  toggleCartCard,
+  makeOrder,
+  resetCartState,
+} = useCart(cards.value);
+const { favorites, toggleFavoritesCard } = useFavorites(cards.value);
+const { searchText, filteredCards } = useSearch(cards, favorites, pageState);
+
+watch(
+  cart,
+  () => {
+    const cartIds = cart.value.map((item) => item.id);
+    cards.value.forEach((card) => {
+      if (cartIds.includes(card.id)) {
+        card.isCart = true;
+      } else {
+        card.isCart = false;
+      }
+    });
+  },
+  { deep: true }
+);
+
+watch(
+  favorites,
+  () => {
+    const favoritesIds = favorites.value.map((item) => item.id);
+    cards.value.forEach((card) => {
+      if (favoritesIds.includes(card.id)) {
+        card.isFavorite = true;
+      } else {
+        card.isFavorite = false;
+      }
+    });
+  },
+  { deep: true }
+);
+
+const changePageState = (newPageState: PageState) => {
+  pageState.value = newPageState;
 };
 
 const openCartModal = () => {
-  isCartVisible.value = true;
+  openModal();
 };
 
 const closeCartModal = () => {
-  isCartVisible.value = false;
-  isOrderDone.value = false;
-};
-
-const makeOrder = () => {
-  isOrderDone.value = true;
-  cards.value = cards.value.map((card) => ({ ...card, isCart: false }));
-};
-
-const toggleFavCard = (id: number) => {
-  const targetCard = cards.value.find((card) => card.id === id);
-  if (targetCard) {
-    targetCard.isFavorite = !targetCard.isFavorite;
-  }
-};
-
-const toggleCartCard = (id: number) => {
-  const targetCard = cards.value.find((card) => card.id === id);
-  if (targetCard) {
-    targetCard.isCart = !targetCard.isCart;
-  }
+  closeModal();
+  resetCartState();
 };
 </script>
 
 <template>
   <div class="page-wrapper">
     <AppHeader
-      :favFilterState="isFavFilterOn"
+      :pageState="pageState"
       :totalCartPrice="totalCartPrice"
       @openCartModal="openCartModal"
-      @changeFavFilterState="changeFavFilterState"
+      @changePageState="changePageState"
     />
     <main class="page-content">
       <h1 class="page-content__title page-title">Все кроссовки</h1>
-      <AppSearch v-model:searchText="searchText" />
+      <AppSearch v-model="searchText" />
       <AppCardList
-        :cards="isFavFilterOn ? favCards : searchedCards"
-        @toggleFavCard="toggleFavCard"
+        :cards="filteredCards"
+        @toggleFavoritesCard="toggleFavoritesCard"
         @toggleCartCard="toggleCartCard"
       />
     </main>
     <AppCartModal
-      :cards="cartCards"
+      v-if="isModalVisible"
+      :cartState="cartState"
+      :cards="cart"
       :totalCartPrice="totalCartPrice"
-      :totalCartPriceTax="totalCartPriceTax"
-      :isVisible="isCartVisible"
-      :isOrderDone="isOrderDone"
       @close="closeCartModal"
-      @removeCardFromCart="toggleCartCard"
+      @removeCardFromCart="removeFromCart"
       @makeOrder="makeOrder"
     />
   </div>

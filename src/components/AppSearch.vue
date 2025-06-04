@@ -1,15 +1,19 @@
 <script setup lang="ts">
 interface Props {
-  searchText: string;
+  modelValue: string;
 }
 
 const updateSearchText = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  emit('update:searchText', target.value.toLowerCase());
+  emit('update:modelValue', target.value.toLowerCase());
+};
+
+const resetInput = () => {
+  emit('update:modelValue', '');
 };
 
 const emit = defineEmits<{
-  (e: 'update:searchText', value: string): void;
+  (e: 'update:modelValue', value: string): void;
 }>();
 
 defineProps<Props>();
@@ -19,8 +23,9 @@ defineProps<Props>();
   <div class="page-content__search search">
     <img class="search__icon" src="/search.svg" width="14" height="`4" />
     <input
-      :value="searchText"
+      :value="modelValue"
       @input="updateSearchText"
+      @blur="resetInput"
       class="search__field"
       type="search"
       placeholder="Поиск"
