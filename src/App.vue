@@ -3,7 +3,7 @@ import AppHeader from './components/AppHeader.vue';
 import AppSearch from './components/AppSearch.vue';
 import AppCardList from './components/AppCardList.vue';
 import AppCartModal from './components/AppCartModal.vue';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { Card } from './types/Card';
 import { useModal } from './composables/useModal';
 import { useCart } from './composables/useCart';
@@ -104,39 +104,9 @@ const {
   toggleCartCard,
   makeOrder,
   resetCartState,
-} = useCart(cards.value);
-const { favorites, toggleFavoritesCard } = useFavorites(cards.value);
+} = useCart(cards);
+const { favorites, toggleFavoritesCard } = useFavorites(cards);
 const { searchText, filteredCards } = useSearch(cards, favorites, pageState);
-
-watch(
-  cart,
-  () => {
-    const cartIds = cart.value.map((item) => item.id);
-    cards.value.forEach((card) => {
-      if (cartIds.includes(card.id)) {
-        card.isCart = true;
-      } else {
-        card.isCart = false;
-      }
-    });
-  },
-  { deep: true }
-);
-
-watch(
-  favorites,
-  () => {
-    const favoritesIds = favorites.value.map((item) => item.id);
-    cards.value.forEach((card) => {
-      if (favoritesIds.includes(card.id)) {
-        card.isFavorite = true;
-      } else {
-        card.isFavorite = false;
-      }
-    });
-  },
-  { deep: true }
-);
 
 const changePageState = (newPageState: PageState) => {
   pageState.value = newPageState;

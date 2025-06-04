@@ -8,10 +8,6 @@ const updateSearchText = (event: Event) => {
   emit('update:modelValue', target.value.toLowerCase());
 };
 
-const resetInput = () => {
-  emit('update:modelValue', '');
-};
-
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
 }>();
@@ -25,7 +21,6 @@ defineProps<Props>();
     <input
       :value="modelValue"
       @input="updateSearchText"
-      @blur="resetInput"
       class="search__field"
       type="search"
       placeholder="Поиск"
