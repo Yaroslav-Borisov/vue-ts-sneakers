@@ -1,4 +1,4 @@
-export const getElementById = <T>(array: T[], id: number | string): T | undefined => {
+export const getElementById = <T>(array: T[], id: number): T | undefined => {
     if (!array || array.length === 0) {
         return undefined;
     }

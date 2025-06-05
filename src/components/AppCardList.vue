@@ -6,17 +6,17 @@ interface Props {
   cards: Card[];
 }
 
-const toggleFavoritesCard = (id: number | string) => {
+const toggleFavoritesCard = (id: number) => {
   emit('toggleFavoritesCard', id);
 };
 
-const toggleCartCard = (id: number | string) => {
+const toggleCartCard = (id: number) => {
   emit('toggleCartCard', id);
 };
 
 const emit = defineEmits<{
-  (e: 'toggleFavoritesCard', id: number | string): void;
-  (e: 'toggleCartCard', id: number | string): void;
+  (e: 'toggleFavoritesCard', id: number): void;
+  (e: 'toggleCartCard', id: number): void;
 }>();
 
 defineProps<Props>();

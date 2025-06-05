@@ -1,124 +1,48 @@
 <script setup lang="ts">
-import AppHeader from './components/AppHeader.vue';
-import AppSearch from './components/AppSearch.vue';
-import AppCardList from './components/AppCardList.vue';
-import AppCartModal from './components/AppCartModal.vue';
-import { ref } from 'vue';
-import type { Card } from './types/Card';
-import { useModal } from './composables/useModal';
-import { useCart } from './composables/useCart';
-import { useFavorites } from './composables/useFavorites';
-import { PageState } from './enums/PageState.ts';
-import { useSearch } from './composables/useSearch';
+import AppHeader from "./components/AppHeader.vue";
+import AppSearch from "./components/AppSearch.vue";
+import AppCardList from "./components/AppCardList.vue";
+import AppCartModal from "./components/AppCartModal.vue";
+import { computed, provide, ref } from "vue";
+import { PageState } from "./enums/PageState.ts";
+import { useSearchCards } from "./composables/useSearchCards.ts";
+import { useCards } from "./composables/useCards";
+import { useFavorites } from "./composables/useFavorites.ts";
+import { useCartModal } from "./composables/useCartModal.ts";
 
 const pageState = ref<PageState>(PageState.All);
-const cards = ref<Card[]>([
-  {
-    id: 1,
-    image: '/sneakers/1.jpg',
-    title: 'Мужские Кроссовки Nike Blazer Mid Suede',
-    price: 12999,
-    isFavorite: true,
-    isCart: false,
-  },
-  {
-    id: 2,
-    image: '/sneakers/2.jpg',
-    title: 'Мужские Кроссовки Nike Air Max 270',
-    price: 12999,
-    isFavorite: false,
-    isCart: true,
-  },
-  {
-    id: 3,
-    image: '/sneakers/3.jpg',
-    title: 'Мужские Кроссовки Nike Blazer Mid Suede',
-    price: 8499,
-    isFavorite: true,
-    isCart: false,
-  },
-  {
-    id: 4,
-    image: '/sneakers/4.jpg',
-    title: 'Кроссовки Puma X Aka Boku Future Rider',
-    price: 8499,
-    isFavorite: false,
-    isCart: false,
-  },
-  {
-    id: 5,
-    image: '/sneakers/5.jpg',
-    title: 'Мужские Кроссовки Under Armour Curry 8',
-    price: 15199,
-    isFavorite: true,
-    isCart: true,
-  },
-  {
-    id: 6,
-    image: '/sneakers/6.jpg',
-    title: 'Мужские Кроссовки Nike Kyrie 7',
-    price: 11299,
-    isFavorite: false,
-    isCart: false,
-  },
-  {
-    id: 7,
-    image: '/sneakers/7.jpg',
-    title: 'Мужские Кроссовки Jordan Air Jordan 11',
-    price: 10799,
-    isFavorite: false,
-    isCart: true,
-  },
-  {
-    id: 8,
-    image: '/sneakers/8.jpg',
-    title: 'Мужские Кроссовки Nike LeBron XVIII',
-    price: 16499,
-    isFavorite: true,
-    isCart: false,
-  },
-  {
-    id: 9,
-    image: '/sneakers/9.jpg',
-    title: 'Мужские Кроссовки Nike LeBron XVIII Low',
-    price: 13999,
-    isFavorite: false,
-    isCart: false,
-  },
-  {
-    id: 10,
-    image: '/sneakers/10.jpg',
-    title: 'Мужские Кроссовки Nike Kyrie Flytrap IV',
-    price: 11299,
-    isFavorite: true,
-    isCart: false,
-  },
-]);
 
-const { isModalVisible, openModal, closeModal } = useModal();
+const { cards, getCardById, updateCard } = useCards();
+
+const { favorites, toggleFavoritesCard } = useFavorites(
+  cards,
+  getCardById,
+  updateCard
+);
+
 const {
+  isModalVisible,
   cart,
-  cartState,
+  orderState,
   totalCartPrice,
-  removeFromCart,
+  openCartModal,
+  closeCartModal,
   toggleCartCard,
+  removeFromCart,
   makeOrder,
-  resetCartState,
-} = useCart(cards);
-const { favorites, toggleFavoritesCard } = useFavorites(cards);
-const { searchText, filteredCards } = useSearch(cards, favorites, pageState);
+} = useCartModal(cards, getCardById, updateCard);
+
+const actualCards = computed(() => {
+  return pageState.value === PageState.All ? cards.value : favorites.value;
+});
+
+provide("totalCartPrice", totalCartPrice);
+
+const { searchText, filteredCards, updateSearchText } =
+  useSearchCards(actualCards);
 
 const changePageState = (newPageState: PageState) => {
   pageState.value = newPageState;
-};
-
-const openCartModal = () => {
-  openModal();
-};
-
-const closeCartModal = () => {
-  closeModal();
-  resetCartState();
 };
 </script>
 
@@ -132,7 +56,7 @@ const closeCartModal = () => {
     />
     <main class="page-content">
       <h1 class="page-content__title page-title">Все кроссовки</h1>
-      <AppSearch v-model="searchText" />
+      <AppSearch v-model="searchText" @update:modelValue="updateSearchText" />
       <AppCardList
         :cards="filteredCards"
         @toggleFavoritesCard="toggleFavoritesCard"
@@ -141,14 +65,11 @@ const closeCartModal = () => {
     </main>
     <AppCartModal
       v-if="isModalVisible"
-      :cartState="cartState"
+      :orderState="orderState"
       :cards="cart"
-      :totalCartPrice="totalCartPrice"
       @close="closeCartModal"
       @removeCardFromCart="removeFromCart"
       @makeOrder="makeOrder"
     />
   </div>
 </template>
-
-<style scoped></style>
