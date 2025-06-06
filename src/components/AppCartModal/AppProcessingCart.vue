@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { Card } from '../../types/Card';
+import { computed, inject, type Ref } from "vue";
+import type { Card } from "../../types/Card";
 
 interface Props {
   cards: Card[];
-  totalCartPrice: number;
 }
 
-const totalCartPriceTax = computed<number>(() => Math.ceil(props.totalCartPrice * 0.05));
+const totalCartPrice = inject<Ref<number>>("totalCartPrice");
+
+const totalCartPriceTax = computed<number>(() => {
+  if (totalCartPrice) {
+    return Math.ceil(totalCartPrice.value * 0.05);
+  }
+  return 0;
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'removeCardFromCart', id: number | string): void;
-  (e: 'makeOrder'): void;
+  (e: "close"): void;
+  (e: "removeCardFromCart", id: number): void;
+  (e: "makeOrder"): void;
 }>();
 
 const props = defineProps<Props>();
@@ -21,7 +27,11 @@ const props = defineProps<Props>();
 <template>
   <div class="drawer__main">
     <div class="drawer__card-list">
-      <div v-for="card in cards" :key="card.id" class="drawer__card-item card card--cart">
+      <div
+        v-for="card in cards"
+        :key="card.id"
+        class="drawer__card-item card card--cart"
+      >
         <img class="card__image" :src="card.image" width="133" height="112" />
         <span class="card__title">{{ card.title }}</span>
         <div class="card__price-block">
@@ -31,7 +41,12 @@ const props = defineProps<Props>();
           class="card__button card__button--remove"
           @click="emit('removeCardFromCart', card.id)"
         >
-          <img class="card__button-icon" src="/btn-remove.svg" width="32" height="32" />
+          <img
+            class="card__button-icon"
+            src="/btn-remove.svg"
+            width="32"
+            height="32"
+          />
         </button>
       </div>
     </div>

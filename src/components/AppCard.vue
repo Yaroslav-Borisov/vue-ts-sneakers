@@ -5,8 +5,8 @@ interface Props {
   card: Card;
 }
 const emit = defineEmits<{
-  (e: 'toggleFavoritesCard', id: number | string): void;
-  (e: 'toggleCartCard', id: number | string): void;
+  (e: 'toggleFavoritesCard', id: number): void;
+  (e: 'toggleCartCard', id: number): void;
 }>();
 
 defineProps<Props>();
