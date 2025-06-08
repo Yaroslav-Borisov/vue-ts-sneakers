@@ -1,58 +1,38 @@
 <script setup lang="ts">
-import AppHeader from "./components/AppHeader.vue";
-import AppSearch from "./components/AppSearch.vue";
-import AppCardList from "./components/AppCardList.vue";
-import AppCartModal from "./components/AppCartModal.vue";
-import { computed, provide, ref } from "vue";
-import { PageState } from "./enums/PageState.ts";
-import { useSearchCards } from "./composables/useSearchCards.ts";
-import { useCards } from "./composables/useCards";
-import { useFavorites } from "./composables/useFavorites.ts";
-import { useCartModal } from "./composables/useCartModal.ts";
+import AppHeader from './components/AppHeader.vue';
+import AppSearch from './components/AppSearch.vue';
+import AppCardList from './components/AppCardList.vue';
+import AppCartModal from './components/AppCartModal.vue';
+import { provide } from 'vue';
+import { PageState } from './enums/PageState.ts';
+import { useFilteredStore } from './store/FilteredStore.ts';
+import { useFavoritesStore } from './store/FavoritesStore.ts';
+import { useCartStore } from './store/CartStore.ts';
+import { usePageStateStore } from './store/PageStateStore.ts';
+import { storeToRefs } from 'pinia';
 
-const pageState = ref<PageState>(PageState.All);
+const pageStateStore = usePageStateStore();
 
-const { cards, getCardById, updateCard } = useCards();
+const { toggleFavoritesCard } = useFavoritesStore();
 
-const { favorites, toggleFavoritesCard } = useFavorites(
-  cards,
-  getCardById,
-  updateCard
-);
+const cartStore = useCartStore();
+const { isModalVisible, cart, orderState, totalCartPrice } = storeToRefs(cartStore);
+const { openCartModal, closeCartModal, toggleCartCard, removeFromCart, makeOrder } = useCartStore();
 
-const {
-  isModalVisible,
-  cart,
-  orderState,
-  totalCartPrice,
-  openCartModal,
-  closeCartModal,
-  toggleCartCard,
-  removeFromCart,
-  makeOrder,
-} = useCartModal(cards, getCardById, updateCard);
+provide('totalCartPrice', totalCartPrice);
 
-const actualCards = computed(() => {
-  return pageState.value === PageState.All ? cards.value : favorites.value;
-});
-
-provide("totalCartPrice", totalCartPrice);
-
-const { searchText, filteredCards, updateSearchText } =
-  useSearchCards(actualCards);
-
-const changePageState = (newPageState: PageState) => {
-  pageState.value = newPageState;
-};
+const filteredStore = useFilteredStore();
+const { searchText, filteredCards } = storeToRefs(filteredStore);
+const { updateSearchText } = useFilteredStore();
 </script>
 
 <template>
   <div class="page-wrapper">
     <AppHeader
-      :pageState="pageState"
+      :pageState="pageStateStore.pageState"
       :totalCartPrice="totalCartPrice"
       @openCartModal="openCartModal"
-      @changePageState="changePageState"
+      @changePageState="pageStateStore.changePageState"
     />
     <main class="page-content">
       <h1 class="page-content__title page-title">Все кроссовки</h1>
