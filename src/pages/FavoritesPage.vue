@@ -10,7 +10,7 @@ import { useSearch } from '../composables/useSearch.ts';
 import { ref } from 'vue';
 import type { Card } from '../types/Card';
 import { onMounted } from 'vue';
-import { getCards } from '../api/getCards';
+import { fetchCards } from '../api/fetchCards.ts';
 
 const cards = ref<Card[]>([]);
 
@@ -29,7 +29,7 @@ const { searchText, filteredCards } = useSearch(cards, favorites);
 
 onMounted(async () => {
   try {
-    cards.value = await getCards();
+    cards.value = await fetchCards();
   } catch (err) {
     console.error(err);
   }
@@ -68,3 +68,4 @@ const closeCartModal = () => {
     />
   </div>
 </template>
+../api/fetchCards.ts

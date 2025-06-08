@@ -1,6 +1,6 @@
 import type { Card } from "../types/Card";
 
-export const getCards = () => {
+export const fetchCards = () => {
     const cards = [
         {
             id: 1,

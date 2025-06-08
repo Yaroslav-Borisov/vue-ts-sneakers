@@ -8,7 +8,7 @@ import { useCart } from '../composables/useCart';
 import { useFavorites } from '../composables/useFavorites';
 import { useSearch } from '../composables/useSearch';
 import { onMounted, ref } from 'vue';
-import { getCards } from '../api/getCards';
+import { getCards } from '../api/fetchCards';
 import type { Card } from '../types/Card';
 
 const cards = ref<Card[]>([]);
@@ -67,3 +67,4 @@ const closeCartModal = () => {
     />
   </div>
 </template>
+../api/fetchCards
